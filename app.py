@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 st.set_page_config(
-    page_title="Broadcast Notification System",
+    page_title="IT Broadcast Notification Generator",
     page_icon="📢",
     layout="wide",
 )
@@ -119,6 +119,7 @@ def clear_form():
         "incident_show_workaround",
         "incident_show_update",
         "incident_show_root_cause",
+        "local_timezone",
     ]
 
     for key in keys:
@@ -136,7 +137,7 @@ def clear_form():
 # BROADCAST REPOSITORY
 # =========================================================
 
-DB_PATH = Path(__file__).resolve().parent / "broadcast_repository.db"
+DB_PATH = Path(__file__).with_name("broadcast_repository.db")
 
 REPOSITORY_KEYS = [
     # Local
@@ -199,6 +200,7 @@ REPOSITORY_KEYS = [
     "incident_show_workaround",
     "incident_show_update",
     "incident_show_root_cause",
+    "local_timezone",
 ]
 
 
@@ -548,6 +550,7 @@ def make_row(label, value, row_class="normal"):
 def local_html(ticket, summary, activity, objective,
                maintenance_date, start_time, end_time,
                add_second, maintenance_date2, start_time2, end_time2,
+               timezone_label,
                affected_service, impact, workaround, options):
 
     duration1 = calculate_duration(start_time, end_time)
@@ -558,17 +561,20 @@ def local_html(ticket, summary, activity, objective,
         if maintenance_date and start_time and end_time:
             schedule_lines.append(
                 f"1st Maintenance: {format_date(maintenance_date)} from "
-                f"{format_time(start_time)} to {format_time(end_time)} (SL Time)"
+                f"{format_time(start_time)} to {format_time(end_time)} "
+                f"({timezone_label})"
             )
         if maintenance_date2 and start_time2 and end_time2:
             schedule_lines.append(
                 f"2nd Maintenance: {format_date(maintenance_date2)} from "
-                f"{format_time(start_time2)} to {format_time(end_time2)} (SL Time)"
+                f"{format_time(start_time2)} to {format_time(end_time2)} "
+                f"({timezone_label})"
             )
     elif maintenance_date and start_time and end_time:
         schedule_lines.append(
             f"{format_date(maintenance_date)} from "
-            f"{format_time(start_time)} to {format_time(end_time)} (SL Time)"
+            f"{format_time(start_time)} to {format_time(end_time)} "
+            f"({timezone_label})"
         )
 
     duration_lines = []
@@ -1242,7 +1248,7 @@ if "blank_start" not in st.session_state:
 
 st.markdown("""
 <div class="app-hero">
-<h1>📢 Broadcast Notification System</h1>
+<h1>📢 IT Broadcast Notification Generator</h1>
 <p>Create Local, ISP, Global, Emergency Maintenance, Incident, and DD Approval templates.</p>
 </div>
 """, unsafe_allow_html=True)
@@ -1306,6 +1312,15 @@ if not st.session_state.preview_only:
                     key="local_end"
                 )
 
+            timezone_label = st.selectbox(
+                "Time Zone",
+                [
+                    "GMT +8 (PH Time)",
+                    "GMT +5:30 (SL Time)",
+                ],
+                key="local_timezone",
+            )
+
             add_second = st.checkbox(
                 "➕ Add 2nd Maintenance",
                 value=False,
@@ -1365,6 +1380,7 @@ if not st.session_state.preview_only:
                 ticket, summary, activity, objective,
                 maintenance_date, start_time, end_time,
                 add_second, maintenance_date2, start_time2, end_time2,
+                timezone_label,
                 affected, impact, workaround, options
             )
             filename = "Local_Maintenance_Advisory.html"
