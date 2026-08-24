@@ -120,6 +120,8 @@ def clear_form():
         "incident_show_update",
         "incident_show_root_cause",
         "local_timezone",
+        "incident_resolved",
+        "incident_resolved_time",
     ]
 
     for key in keys:
@@ -201,6 +203,8 @@ REPOSITORY_KEYS = [
     "incident_show_update",
     "incident_show_root_cause",
     "local_timezone",
+    "incident_resolved",
+    "incident_resolved_time",
 ]
 
 
@@ -923,6 +927,8 @@ def incident_html(
     summary,
     incident_date,
     incident_time,
+    incident_resolved,
+    incident_resolved_time,
     impact,
     background,
     workaround,
@@ -933,10 +939,34 @@ def incident_html(
     show_root_cause=True,
 ):
     incident_dt = ""
+
     if incident_date:
-        incident_dt = format_date(incident_date)
-    if incident_time:
-        incident_dt = f"{incident_dt}, {format_time(incident_time)}" if incident_dt else format_time(incident_time)
+        # Example: August 13, 2026
+        incident_date_text = incident_date.strftime("%B %d, %Y")
+    else:
+        incident_date_text = ""
+
+    if incident_resolved:
+        if incident_date_text and incident_time and incident_resolved_time:
+            incident_dt = (
+                f"{incident_date_text}, {format_time(incident_time)} – "
+                f"{format_time(incident_resolved_time)} (SL Time) - Resolved"
+            )
+        elif incident_date_text and incident_time:
+            incident_dt = (
+                f"{incident_date_text}, {format_time(incident_time)} "
+                f"(SL Time) - Resolved"
+            )
+        elif incident_date_text:
+            incident_dt = f"{incident_date_text} (SL Time) - Resolved"
+    else:
+        if incident_date_text and incident_time:
+            incident_dt = (
+                f"{incident_date_text}, {format_time(incident_time)} "
+                f"(SL Time) – Ongoing"
+            )
+        elif incident_date_text:
+            incident_dt = f"{incident_date_text} (SL Time) – Ongoing"
 
     rows = [
         make_row("Ticket No.:", escape(ticket), "ticket"),
@@ -1744,10 +1774,25 @@ if not st.session_state.preview_only:
                 )
             with c2:
                 incident_time = st.time_input(
-                    "Time of Incident",
+                    "Incident Start Time (SL Time)",
                     value=None,
                     key="incident_time",
                 )
+
+            incident_resolved = st.checkbox(
+                "✅ Incident Resolved",
+                value=False,
+                key="incident_resolved",
+            )
+
+            if incident_resolved:
+                incident_resolved_time = st.time_input(
+                    "Resolved Time (SL Time)",
+                    value=None,
+                    key="incident_resolved_time",
+                )
+            else:
+                incident_resolved_time = None
 
             impact = st.text_area(
                 "Service / Module Impact",
@@ -1789,6 +1834,8 @@ if not st.session_state.preview_only:
                 summary=summary,
                 incident_date=incident_date,
                 incident_time=incident_time,
+                incident_resolved=incident_resolved,
+                incident_resolved_time=incident_resolved_time,
                 impact=impact,
                 background=background,
                 workaround=workaround,
