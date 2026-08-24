@@ -44,6 +44,16 @@ def calculate_duration(start_time, end_time):
     return f"{hours:02d} hour(s) and {minutes:02d} minute(s)"
 
 
+def clean_timezone_label(label):
+    if not label:
+        return ""
+    return (
+        str(label)
+        .replace(" (PH Time)", " PH Time")
+        .replace(" (SL Time)", " SL Time")
+    )
+
+
 def calculate_duration_with_dates(start_date, start_time, end_date, end_time):
     if not start_date or not start_time or not end_time:
         return ""
@@ -151,6 +161,8 @@ def clear_form():
         "global_ph_end_date",
         "global_sl_end_date",
         "emergency_end_date",
+        "incident_resolved_date",
+        "global_incident_resolved_date",
     ]
 
     for key in keys:
@@ -247,6 +259,8 @@ REPOSITORY_KEYS = [
     "global_ph_end_date",
     "global_sl_end_date",
     "emergency_end_date",
+    "incident_resolved_date",
+    "global_incident_resolved_date",
 ]
 
 
@@ -617,7 +631,7 @@ def local_html(ticket, summary, activity, objective,
             txt = (
                 f"{format_date(sd)} {format_time(stime)} to "
                 f"{format_date(ed)} {format_time(etime)} "
-                f"({timezone_label})"
+                f"({clean_timezone_label(timezone_label)})"
             )
         return f"{prefix}{txt}" if prefix else txt
 
@@ -715,7 +729,7 @@ def isp_html(ticket, activity, summary, objective, date1, start1, end_date1, end
             txt = (
                 f"{format_date(sd)} {format_time(stime)} – "
                 f"{format_date(ed)} {format_time(etime)} "
-                f"({timezone_label})"
+                f"({clean_timezone_label(timezone_label)})"
             )
         return f"{prefix}{txt}" if prefix else txt
 
@@ -934,13 +948,13 @@ def emergency_html(
             schedule = (
                 f"{format_date(maintenance_date)}, from "
                 f"{format_time(start_time)} to {format_time(end_time)} "
-                f"({timezone_label})"
+                f"({clean_timezone_label(timezone_label)})"
             )
         else:
             schedule = (
                 f"{format_date(maintenance_date)}, {format_time(start_time)} to "
                 f"{format_date(finish_date)}, {format_time(end_time)} "
-                f"({timezone_label})"
+                f"({clean_timezone_label(timezone_label)})"
             )
 
     rows = [
@@ -1035,6 +1049,7 @@ def incident_html(
     incident_date,
     incident_time,
     incident_resolved,
+    incident_resolved_date,
     incident_resolved_time,
     impact,
     background,
@@ -1048,32 +1063,51 @@ def incident_html(
     incident_dt = ""
 
     if incident_date:
-        # Example: August 13, 2026
         incident_date_text = incident_date.strftime("%B %d, %Y")
     else:
         incident_date_text = ""
 
     if incident_resolved:
+        resolved_date = incident_resolved_date or incident_date
+        resolved_date_text = (
+            resolved_date.strftime("%B %d, %Y")
+            if resolved_date else ""
+        )
+
         if incident_date_text and incident_time and incident_resolved_time:
-            incident_dt = (
-                f"{incident_date_text}, {format_time(incident_time)} – "
-                f"{format_time(incident_resolved_time)} (SL Time) - Resolved"
-            )
+            if resolved_date and incident_date and resolved_date != incident_date:
+                incident_dt = (
+                    f"{incident_date_text}, {format_time(incident_time)} to "
+                    f"{resolved_date_text}, {format_time(incident_resolved_time)} "
+                    f"(GMT +5:30 SL Time) - Resolved"
+                )
+            else:
+                incident_dt = (
+                    f"{incident_date_text}, {format_time(incident_time)} – "
+                    f"{format_time(incident_resolved_time)} "
+                    f"(GMT +5:30 SL Time) - Resolved"
+                )
         elif incident_date_text and incident_time:
             incident_dt = (
                 f"{incident_date_text}, {format_time(incident_time)} "
-                f"(SL Time) - Resolved"
+                f"(GMT +5:30 SL Time) - Resolved"
             )
         elif incident_date_text:
-            incident_dt = f"{incident_date_text} (SL Time) - Resolved"
+            incident_dt = (
+                f"{incident_date_text} "
+                f"(GMT +5:30 SL Time) - Resolved"
+            )
     else:
         if incident_date_text and incident_time:
             incident_dt = (
                 f"{incident_date_text}, {format_time(incident_time)} "
-                f"(SL Time) – Ongoing"
+                f"(GMT +5:30 SL Time) – Ongoing"
             )
         elif incident_date_text:
-            incident_dt = f"{incident_date_text} (SL Time) – Ongoing"
+            incident_dt = (
+                f"{incident_date_text} "
+                f"(GMT +5:30 SL Time) – Ongoing"
+            )
 
     rows = [
         make_row("Ticket No.:", escape(ticket), "ticket"),
@@ -1978,12 +2012,21 @@ if not st.session_state.preview_only:
             )
 
             if incident_resolved:
-                incident_resolved_time = st.time_input(
-                    "Resolved Time (SL Time)",
-                    value=None,
-                    key="incident_resolved_time",
-                )
+                c1,c2 = st.columns(2)
+                with c1:
+                    incident_resolved_date = st.date_input(
+                        "Resolved Date",
+                        value=None,
+                        key="incident_resolved_date",
+                    )
+                with c2:
+                    incident_resolved_time = st.time_input(
+                        "Resolved Time (SL Time)",
+                        value=None,
+                        key="incident_resolved_time",
+                    )
             else:
+                incident_resolved_date = None
                 incident_resolved_time = None
 
             impact = st.text_area(
@@ -2027,6 +2070,7 @@ if not st.session_state.preview_only:
                 incident_date=incident_date,
                 incident_time=incident_time,
                 incident_resolved=incident_resolved,
+                incident_resolved_date=incident_resolved_date,
                 incident_resolved_time=incident_resolved_time,
                 impact=impact,
                 background=background,
