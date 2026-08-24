@@ -126,6 +126,20 @@ def clear_form():
         "global_timezone_1",
         "global_timezone_2",
         "emergency_timezone",
+        "global_incident_ticket",
+        "global_incident_summary",
+        "global_incident_date",
+        "global_incident_time",
+        "global_incident_resolved",
+        "global_incident_resolved_time",
+        "global_incident_impact",
+        "global_incident_background",
+        "global_incident_workaround",
+        "global_incident_update",
+        "global_incident_root_cause",
+        "global_incident_show_workaround",
+        "global_incident_show_update",
+        "global_incident_show_root_cause",
     ]
 
     for key in keys:
@@ -213,6 +227,20 @@ REPOSITORY_KEYS = [
     "global_timezone_1",
     "global_timezone_2",
     "emergency_timezone",
+    "global_incident_ticket",
+    "global_incident_summary",
+    "global_incident_date",
+    "global_incident_time",
+    "global_incident_resolved",
+    "global_incident_resolved_time",
+    "global_incident_impact",
+    "global_incident_background",
+    "global_incident_workaround",
+    "global_incident_update",
+    "global_incident_root_cause",
+    "global_incident_show_workaround",
+    "global_incident_show_update",
+    "global_incident_show_root_cause",
 ]
 
 
@@ -357,7 +385,7 @@ def repository_metadata(template_type):
             st.session_state.get("emergency_workaround", ""),
         ]
 
-    else:
+    elif template_type == "Incident Advisory":
         ticket = st.session_state.get("incident_ticket", "")
         title = (
             st.session_state.get("incident_summary", "")
@@ -371,6 +399,22 @@ def repository_metadata(template_type):
             st.session_state.get("incident_workaround", ""),
             st.session_state.get("incident_update", ""),
             st.session_state.get("incident_root_cause", ""),
+        ]
+
+    else:
+        ticket = st.session_state.get("global_incident_ticket", "")
+        title = (
+            st.session_state.get("global_incident_summary", "")
+            or st.session_state.get("global_incident_background", "")
+        )
+        search_parts = [
+            ticket,
+            st.session_state.get("global_incident_summary", ""),
+            st.session_state.get("global_incident_impact", ""),
+            st.session_state.get("global_incident_background", ""),
+            st.session_state.get("global_incident_workaround", ""),
+            st.session_state.get("global_incident_update", ""),
+            st.session_state.get("global_incident_root_cause", ""),
         ]
 
     title = title.strip() or ticket.strip() or template_type
@@ -1019,6 +1063,105 @@ def incident_html(
 </html>"""
 
 
+
+# =========================================================
+# GLOBAL INCIDENT BROADCAST NOTIFICATION
+# =========================================================
+
+GLOBAL_INCIDENT_RED = "#CF2417"
+
+def global_incident_html(
+    ticket,
+    summary,
+    incident_date,
+    incident_time,
+    incident_resolved,
+    incident_resolved_time,
+    impact,
+    background,
+    workaround,
+    update,
+    root_cause,
+    show_workaround=True,
+    show_update=True,
+    show_root_cause=True,
+):
+    incident_dt = ""
+
+    if incident_date:
+        incident_date_text = incident_date.strftime("%B %d, %Y")
+    else:
+        incident_date_text = ""
+
+    if incident_resolved:
+        if incident_date_text and incident_time and incident_resolved_time:
+            incident_dt = (
+                f"{incident_date_text}, from {format_time(incident_time)} "
+                f"to {format_time(incident_resolved_time)} "
+                f"(GMT +5:30 SL Time) – Resolved"
+            )
+        elif incident_date_text and incident_time:
+            incident_dt = (
+                f"{incident_date_text}, from {format_time(incident_time)} "
+                f"(GMT +5:30 SL Time) – Resolved"
+            )
+        elif incident_date_text:
+            incident_dt = f"{incident_date_text} (GMT +5:30 SL Time) – Resolved"
+    else:
+        if incident_date_text and incident_time:
+            incident_dt = (
+                f"{incident_date_text}, from {format_time(incident_time)} "
+                f"(GMT +5:30 SL Time) – Ongoing"
+            )
+        elif incident_date_text:
+            incident_dt = f"{incident_date_text} (GMT +5:30 SL Time) – Ongoing"
+
+    rows = [
+        make_row("Ticket No:", escape(ticket), "ticket"),
+        make_row("Summary:", escape(summary), "normal"),
+        make_row("Date/Time of Incident:", escape(incident_dt), "normal"),
+        make_row("Service / Module Impact:", escape(impact), "normal"),
+        make_row("Incident Background:", escape(background), "medium"),
+    ]
+
+    if show_workaround:
+        rows.append(make_row("Workaround:", escape(workaround), "normal"))
+
+    if show_update:
+        rows.append(make_row("Update:", escape(update), "medium"))
+
+    if show_root_cause:
+        rows.append(make_row("Root Cause:", escape(root_cause), "normal"))
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Global Incident Broadcast Notification</title>
+{maintenance_css(GLOBAL_INCIDENT_RED)}
+<style>
+.broadcast-table .title {{
+    color:#FFFFFF;
+}}
+.broadcast-table .label {{
+    color:#FFFFFF;
+}}
+</style>
+</head>
+<body>
+<div class="broadcast-wrap">
+<table class="broadcast-table">
+<colgroup><col class="label-col"><col class="value-col"></colgroup>
+<tr>
+    <th colspan="2" class="title">Global Incident Broadcast Notification</th>
+</tr>
+{''.join(rows)}
+</table>
+</div>
+</body>
+</html>"""
+
+
 # =========================================================
 # DD APPROVAL TEMPLATE
 # =========================================================
@@ -1206,6 +1349,13 @@ def has_meaningful_content(template_name):
             "incident_background", "incident_workaround",
             "incident_update", "incident_root_cause",
         ]
+    elif template_name == "Global Incident Broadcast Notification":
+        keys = [
+            "global_incident_ticket", "global_incident_summary",
+            "global_incident_impact", "global_incident_background",
+            "global_incident_workaround", "global_incident_update",
+            "global_incident_root_cause",
+        ]
     else:
         keys = [
             "dd_ticket", "dd_requestor", "dd_background", "dd_objective",
@@ -1292,7 +1442,7 @@ if "blank_start" not in st.session_state:
 st.markdown("""
 <div class="app-hero">
 <h1>📢 IT Broadcast Notification Generator</h1>
-<p>Create Local, ISP, Global, Emergency Maintenance, Incident, and DD Approval templates.</p>
+<p>Create Local, ISP, Global, Emergency Maintenance, Incident, Global Incident, and DD Approval templates.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1304,6 +1454,7 @@ template = st.selectbox(
         "Global Maintenance Advisory",
         "Emergency Maintenance Advisory",
         "Incident Advisory",
+        "Global Incident Broadcast Notification",
         "DD Approval Template",
     ],
     key="broadcast_template",
@@ -1890,6 +2041,127 @@ if not st.session_state.preview_only:
             preview_height = 620
 
         # =====================================================
+        # GLOBAL INCIDENT BROADCAST NOTIFICATION
+        # =====================================================
+        elif template == "Global Incident Broadcast Notification":
+            with st.expander("⚙ Optional Fields", expanded=False):
+                st.caption("Uncheck a row if the information is not available yet.")
+                show_workaround = st.checkbox(
+                    "Workaround",
+                    value=True,
+                    key="global_incident_show_workaround",
+                )
+                show_update = st.checkbox(
+                    "Update",
+                    value=True,
+                    key="global_incident_show_update",
+                )
+                show_root_cause = st.checkbox(
+                    "Root Cause",
+                    value=True,
+                    key="global_incident_show_root_cause",
+                )
+
+            ticket = st.text_input(
+                "Ticket No.",
+                "",
+                key="global_incident_ticket",
+            )
+
+            summary = st.text_area(
+                "Summary",
+                "",
+                height=72,
+                key="global_incident_summary",
+            )
+
+            c1, c2 = st.columns(2)
+
+            with c1:
+                incident_date = st.date_input(
+                    "Date of Incident",
+                    value=None,
+                    key="global_incident_date",
+                )
+
+            with c2:
+                incident_time = st.time_input(
+                    "Incident Start Time (SL Time)",
+                    value=None,
+                    key="global_incident_time",
+                )
+
+            incident_resolved = st.checkbox(
+                "✅ Incident Resolved",
+                value=False,
+                key="global_incident_resolved",
+            )
+
+            if incident_resolved:
+                incident_resolved_time = st.time_input(
+                    "Resolved Time (SL Time)",
+                    value=None,
+                    key="global_incident_resolved_time",
+                )
+            else:
+                incident_resolved_time = None
+
+            impact = st.text_area(
+                "Service / Module Impact",
+                "",
+                height=75,
+                key="global_incident_impact",
+            )
+
+            background = st.text_area(
+                "Incident Background",
+                "",
+                height=95,
+                key="global_incident_background",
+            )
+
+            workaround = st.text_area(
+                "Workaround",
+                "",
+                height=75,
+                key="global_incident_workaround",
+            )
+
+            update = st.text_area(
+                "Update",
+                "",
+                height=90,
+                key="global_incident_update",
+            )
+
+            root_cause = st.text_area(
+                "Root Cause",
+                "",
+                height=75,
+                key="global_incident_root_cause",
+            )
+
+            html_output = global_incident_html(
+                ticket=ticket,
+                summary=summary,
+                incident_date=incident_date,
+                incident_time=incident_time,
+                incident_resolved=incident_resolved,
+                incident_resolved_time=incident_resolved_time,
+                impact=impact,
+                background=background,
+                workaround=workaround,
+                update=update,
+                root_cause=root_cause,
+                show_workaround=show_workaround,
+                show_update=show_update,
+                show_root_cause=show_root_cause,
+            )
+
+            filename = "Global_Incident_Broadcast_Notification.html"
+            preview_height = 650
+
+        # =====================================================
         # DD APPROVAL
         # =====================================================
         else:
@@ -2018,6 +2290,7 @@ if not st.session_state.preview_only:
                 "Global Maintenance Advisory",
                 "Emergency Maintenance Advisory",
                 "Incident Advisory",
+                "Global Incident Broadcast Notification",
                 "DD Approval Template",
             ],
             key="repository_filter",
