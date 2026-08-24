@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 st.set_page_config(
-    page_title="IT Broadcast Notification Generator",
+    page_title="Broadcast Notification System",
     page_icon="📢",
     layout="wide",
 )
@@ -1419,7 +1419,7 @@ if "blank_start" not in st.session_state:
 
 st.markdown("""
 <div class="app-hero">
-<h1>📢 IT Broadcast Notification Generator</h1>
+<h1>📢 Broadcast Notification System</h1>
 <p>Create Local, ISP, Global, Emergency Maintenance, Incident, and DD Approval templates.</p>
 </div>
 """, unsafe_allow_html=True)
