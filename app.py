@@ -122,6 +122,10 @@ def clear_form():
         "local_timezone",
         "incident_resolved",
         "incident_resolved_time",
+        "isp_timezone",
+        "global_timezone_1",
+        "global_timezone_2",
+        "emergency_timezone",
     ]
 
     for key in keys:
@@ -205,6 +209,10 @@ REPOSITORY_KEYS = [
     "local_timezone",
     "incident_resolved",
     "incident_resolved_time",
+    "isp_timezone",
+    "global_timezone_1",
+    "global_timezone_2",
+    "emergency_timezone",
 ]
 
 
@@ -634,6 +642,7 @@ def isp_html(ticket, activity, summary, objective, date1, start1, end1,
              add_second, date2, start2, end2,
              down_date1, down_start1, down_end1,
              down_date2, down_start2, down_end2,
+             timezone_label,
              impact, workaround, options):
 
     duration1 = calculate_duration(start1, end1)
@@ -644,17 +653,17 @@ def isp_html(ticket, activity, summary, objective, date1, start1, end1,
         if date1 and start1 and end1:
             schedules.append(
                 f"1st Maintenance: {format_date(date1)} from "
-                f"{format_time(start1)} – {format_time(end1)} (SL Time)"
+                f"{format_time(start1)} – {format_time(end1)} ({timezone_label})"
             )
         if date2 and start2 and end2:
             schedules.append(
                 f"2nd Maintenance: {format_date(date2)} from "
-                f"{format_time(start2)} – {format_time(end2)} (SL Time)"
+                f"{format_time(start2)} – {format_time(end2)} ({timezone_label})"
             )
     elif date1 and start1 and end1:
         schedules.append(
             f"{format_date(date1)} from "
-            f"{format_time(start1)} – {format_time(end1)} (SL Time)"
+            f"{format_time(start1)} – {format_time(end1)} ({timezone_label})"
         )
 
     durations = []
@@ -671,17 +680,17 @@ def isp_html(ticket, activity, summary, objective, date1, start1, end1,
         if down_date1 and down_start1 and down_end1:
             downtime.append(
                 f"1st Maintenance: {format_date(down_date1)} from "
-                f"{format_time(down_start1)} – {format_time(down_end1)} (SL Time)"
+                f"{format_time(down_start1)} – {format_time(down_end1)} ({timezone_label})"
             )
         if down_date2 and down_start2 and down_end2:
             downtime.append(
                 f"2nd Maintenance: {format_date(down_date2)} from "
-                f"{format_time(down_start2)} – {format_time(down_end2)} (SL Time)"
+                f"{format_time(down_start2)} – {format_time(down_end2)} ({timezone_label})"
             )
     elif down_date1 and down_start1 and down_end1:
         downtime.append(
             f"{format_date(down_date1)} from "
-            f"{format_time(down_start1)} – {format_time(down_end1)} (SL Time)"
+            f"{format_time(down_start1)} – {format_time(down_end1)} ({timezone_label})"
         )
 
     rows = [make_row("For Ticket Number:", escape(ticket), "ticket")]
@@ -727,9 +736,11 @@ def global_html(
     ph_date,
     ph_start,
     ph_end,
+    timezone_1,
     sl_date,
     sl_start,
     sl_end,
+    timezone_2,
     impact,
     workaround,
     options,
@@ -741,12 +752,12 @@ def global_html(
     if ph_date and ph_start and ph_end:
         schedule_lines.append(
             f"{format_date(ph_date)} {format_time(ph_start)} to "
-            f"{format_time(ph_end)} (PH Time)"
+            f"{format_time(ph_end)} ({timezone_1})"
         )
     if sl_date and sl_start and sl_end:
         schedule_lines.append(
             f"{format_date(sl_date)} {format_time(sl_start)} to "
-            f"{format_time(sl_end)} (SL Time)"
+            f"{format_time(sl_end)} ({timezone_2})"
         )
 
     rows = [
@@ -822,6 +833,7 @@ def emergency_html(
     maintenance_date,
     start_time,
     end_time,
+    timezone_label,
     downtime,
     impact,
     workaround,
@@ -833,7 +845,8 @@ def emergency_html(
     if maintenance_date and start_time and end_time:
         schedule = (
             f"{format_date(maintenance_date)}, from "
-            f"{format_time(start_time)} to {format_time(end_time)}"
+            f"{format_time(start_time)} to {format_time(end_time)} "
+            f"({timezone_label})"
         )
 
     rows = [
@@ -1444,6 +1457,12 @@ if not st.session_state.preview_only:
             with c2:
                 end1 = st.time_input("1st End Time", value=None if cleared else datetime.strptime("18:00","%H:%M").time(), key="isp_end1")
 
+            timezone_label = st.selectbox(
+                "Time Zone",
+                ["GMT +8 (PH Time)", "GMT +5:30 (SL Time)"],
+                key="isp_timezone",
+            )
+
             add_second = st.checkbox("➕ Add 2nd Maintenance", False, key="isp_add_second")
             if add_second:
                 date2 = st.date_input("2nd Maintenance Date", value=None if cleared else datetime(2026,8,13).date(), key="isp_date2")
@@ -1482,8 +1501,8 @@ if not st.session_state.preview_only:
             }
             html_output = isp_html(ticket,activity,summary,objective,date1,start1,end1,
                                    add_second,date2,start2,end2,down_date1,down_start1,
-                                   down_end1,down_date2,down_start2,down_end2,impact,
-                                   workaround,options)
+                                   down_end1,down_date2,down_start2,down_end2,timezone_label,
+                                   impact,workaround,options)
             filename = "ISP_Maintenance_Advisory.html"
             preview_height = 620
 
@@ -1545,6 +1564,13 @@ if not st.session_state.preview_only:
                     key="global_ph_end",
                 )
 
+            timezone_1 = st.selectbox(
+                "PH Schedule Time Zone",
+                ["GMT +8 (PH Time)", "GMT +5:30 (SL Time)"],
+                index=0,
+                key="global_timezone_1",
+            )
+
             st.markdown("**SL Schedule**")
             sl_date = st.date_input(
                 "SL Maintenance Date",
@@ -1564,6 +1590,13 @@ if not st.session_state.preview_only:
                     value=None if cleared else datetime.strptime("19:00","%H:%M").time(),
                     key="global_sl_end",
                 )
+
+            timezone_2 = st.selectbox(
+                "SL Schedule Time Zone",
+                ["GMT +8 (PH Time)", "GMT +5:30 (SL Time)"],
+                index=1,
+                key="global_timezone_2",
+            )
 
             st.text_input(
                 "Duration",
@@ -1600,8 +1633,8 @@ if not st.session_state.preview_only:
 
             html_output = global_html(
                 ticket, activity, summary, objective,
-                ph_date, ph_start, ph_end,
-                sl_date, sl_start, sl_end,
+                ph_date, ph_start, ph_end, timezone_1,
+                sl_date, sl_start, sl_end, timezone_2,
                 impact, workaround, options
             )
 
@@ -1676,6 +1709,12 @@ if not st.session_state.preview_only:
                     key="emergency_end",
                 )
 
+            timezone_label = st.selectbox(
+                "Time Zone",
+                ["GMT +8 (PH Time)", "GMT +5:30 (SL Time)"],
+                key="emergency_timezone",
+            )
+
             st.text_input(
                 "Duration",
                 value=calculate_duration(start_time, end_time),
@@ -1721,6 +1760,7 @@ if not st.session_state.preview_only:
                 maintenance_date,
                 start_time,
                 end_time,
+                timezone_label,
                 downtime,
                 impact,
                 workaround,
