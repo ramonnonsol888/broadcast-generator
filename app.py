@@ -141,16 +141,9 @@ def clear_form():
         "global_incident_show_update",
         "global_incident_show_root_cause",
 
-        # Windows App Transition
-        "windows_app_greeting", "windows_app_intro", "windows_app_notice",
-        "windows_app_purpose", "windows_app_action_intro",
-        "windows_app_action_1", "windows_app_action_2",
-        "windows_app_rollout", "windows_app_availability",
-        "windows_app_old_label", "windows_app_new_label",
-        "windows_app_old_image", "windows_app_new_image",
-        "windows_app_support", "windows_app_decommission",
-        "windows_app_closing", "windows_app_regards",
-        "windows_app_team_1", "windows_app_team_2",
+        # Bulletin Advisory
+        "bulletin_greeting", "bulletin_content", "bulletin_closing",
+        "bulletin_regards", "bulletin_team_1", "bulletin_team_2",
     ]
 
     for key in keys:
@@ -253,15 +246,9 @@ REPOSITORY_KEYS = [
     "global_incident_show_update",
     "global_incident_show_root_cause",
 
-    # Windows App Transition (uploaded images are intentionally not persisted)
-    "windows_app_greeting", "windows_app_intro", "windows_app_notice",
-    "windows_app_purpose", "windows_app_action_intro",
-    "windows_app_action_1", "windows_app_action_2",
-    "windows_app_rollout", "windows_app_availability",
-    "windows_app_old_label", "windows_app_new_label",
-    "windows_app_support", "windows_app_decommission",
-    "windows_app_closing", "windows_app_regards",
-    "windows_app_team_1", "windows_app_team_2",
+    # Bulletin Advisory
+    "bulletin_greeting", "bulletin_content", "bulletin_closing",
+    "bulletin_regards", "bulletin_team_1", "bulletin_team_2",
 ]
 
 
@@ -422,17 +409,15 @@ def repository_metadata(template_type):
             st.session_state.get("incident_root_cause", ""),
         ]
 
-    elif template_type == "Windows App Transition Advisory":
+    elif template_type == "Bulletin Advisory":
         ticket = ""
-        title = st.session_state.get("windows_app_notice", "") or "Windows App Transition Advisory"
+        title = st.session_state.get("bulletin_content", "") or "Bulletin Advisory"
         search_parts = [
-            st.session_state.get("windows_app_intro", ""),
-            st.session_state.get("windows_app_notice", ""),
-            st.session_state.get("windows_app_purpose", ""),
-            st.session_state.get("windows_app_action_1", ""),
-            st.session_state.get("windows_app_action_2", ""),
-            st.session_state.get("windows_app_support", ""),
-            st.session_state.get("windows_app_decommission", ""),
+            st.session_state.get("bulletin_greeting", ""),
+            st.session_state.get("bulletin_content", ""),
+            st.session_state.get("bulletin_closing", ""),
+            st.session_state.get("bulletin_team_1", ""),
+            st.session_state.get("bulletin_team_2", ""),
         ]
 
     else:
@@ -1355,22 +1340,15 @@ a{{color:#0563C1}}
 
 
 
-def windows_app_transition_html(
-    greeting, intro, notice, purpose, action_intro, action_1, action_2,
-    rollout, availability, old_label, new_label, old_image, new_image,
-    support, decommission, closing, regards, team_1, team_2,
-):
+def bulletin_html(greeting, content, closing, regards, team_1, team_2):
     def text(value):
         return escape(value or "").replace("\n", "<br>")
-
-    old_image_html = uploaded_image_html(old_image, 82)
-    new_image_html = uploaded_image_html(new_image, 82)
 
     return f"""<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Windows App Transition Advisory</title>
+<title>Bulletin Advisory</title>
 <style>
 html,body{{margin:0;padding:0;background:#fff}}
 *{{box-sizing:border-box}}
@@ -1382,11 +1360,7 @@ html,body{{margin:0;padding:0;background:#fff}}
 .brand{{font-size:29px;line-height:1;color:#2F5597;margin:8px 0 18px}}
 p{{margin:0 0 10px}}
 .strong{{font-weight:700}}
-ul{{margin:4px 0 12px 24px;padding:0}}
-li{{margin:0 0 12px}}
-.app-block{{margin:2px 0 17px}}
-.app-label{{font-weight:700;margin-bottom:3px}}
-.app-block img{{margin-top:3px!important;max-height:84px!important}}
+.content{{white-space:normal;margin-bottom:12px}}
 .signature{{margin-top:15px}}
 @media print{{
  body{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
@@ -1399,26 +1373,7 @@ li{{margin:0 0 12px}}
 <div class="announcement">
   <div class="brand">GICT</div>
   <p>{text(greeting)}</p>
-  <p>{text(intro)}</p>
-  <p>{text(notice)}</p>
-  <p>{text(purpose)}</p>
-  <p class="strong">{text(action_intro)}</p>
-  <ul>
-    <li>{text(action_1)}</li>
-    <li>{text(action_2)}</li>
-  </ul>
-  <p>{text(rollout)}</p>
-  <p>{text(availability)}</p>
-  <div class="app-block">
-    <div class="app-label">{text(old_label)}</div>
-    {old_image_html}
-  </div>
-  <div class="app-block">
-    <div class="app-label">{text(new_label)}</div>
-    {new_image_html}
-  </div>
-  <p>{text(support)}</p>
-  <p>{text(decommission)}</p>
+  <div class="content">{text(content)}</div>
   <p>{text(closing)}</p>
   <div class="signature">
     <div class="strong">{text(regards)}</div>
@@ -1465,13 +1420,8 @@ def has_meaningful_content(template_name):
             "global_incident_workaround", "global_incident_update",
             "global_incident_root_cause",
         ]
-    elif template_name == "Windows App Transition Advisory":
-        keys = [
-            "windows_app_intro", "windows_app_notice", "windows_app_purpose",
-            "windows_app_action_1", "windows_app_action_2",
-            "windows_app_rollout", "windows_app_availability",
-            "windows_app_support", "windows_app_decommission",
-        ]
+    elif template_name == "Bulletin Advisory":
+        keys = ["bulletin_content"]
     else:
         keys = [
             "dd_ticket", "dd_requestor", "dd_background", "dd_objective",
@@ -1558,7 +1508,7 @@ if "blank_start" not in st.session_state:
 st.markdown("""
 <div class="app-hero">
 <h1>📢 IT Broadcast Notification Generator</h1>
-<p>Create maintenance, incident, Windows App transition, and DD Approval templates.</p>
+<p>Create maintenance, incident, bulletin, and DD Approval templates.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1571,7 +1521,7 @@ template = st.selectbox(
         "Emergency Maintenance Advisory",
         "Incident Advisory",
         "Global Incident Broadcast Notification",
-        "Windows App Transition Advisory",
+        "Bulletin Advisory",
         "DD Approval Template",
     ],
     key="broadcast_template",
@@ -2279,88 +2229,29 @@ if not st.session_state.preview_only:
             preview_height = 650
 
         # =====================================================
-        # WINDOWS APP TRANSITION ADVISORY
+        # BULLETIN ADVISORY
         # =====================================================
-        elif template == "Windows App Transition Advisory":
-            st.caption("Create a letter-style GICT announcement and upload the old and new application icons.")
+        elif template == "Bulletin Advisory":
+            st.caption("Create a plain, letter-style GICT bulletin using one editable content field.")
 
             greeting = st.text_input(
                 "Greeting", "" if cleared else "Dear All,",
-                placeholder="Dear All,", key="windows_app_greeting",
+                placeholder="Dear All,", key="bulletin_greeting",
             )
-            intro = st.text_area(
-                "Opening Announcement", "",
-                placeholder="Please be informed that Microsoft will end support for the Remote Desktop app for Windows starting March 27, 2026...",
-                height=80, key="windows_app_intro",
-            )
-            notice = st.text_area(
-                "Availability Notice", "",
-                placeholder="...it will no longer be available or supported starting May 27, 2026.",
-                height=70, key="windows_app_notice",
-            )
-            purpose = st.text_area(
-                "Transition Requirement", "",
-                placeholder="To ensure uninterrupted access to Azure Virtual Desktop (AVD), users are required to transition to the Windows App...",
-                height=85, key="windows_app_purpose",
-            )
-            action_intro = st.text_input(
-                "Action Section Heading", "",
-                placeholder="What users need to do:", key="windows_app_action_intro",
-            )
-            action_1 = st.text_input(
-                "Action Item 1", "",
-                placeholder="Start using the Windows App when connecting to your VDI.", key="windows_app_action_1",
-            )
-            action_2 = st.text_input(
-                "Action Item 2", "",
-                placeholder="The Windows App is already available on your desktop.", key="windows_app_action_2",
-            )
-            rollout = st.text_area(
-                "Rollout Statement", "",
-                placeholder="GICT has already rolled out the new Windows App for VDI access.",
-                height=65, key="windows_app_rollout",
-            )
-            availability = st.text_area(
-                "User Request", "",
-                placeholder="You may find the application on your desktop. We kindly request all users to start using the Windows App when connecting to your VDI.",
-                height=85, key="windows_app_availability",
-            )
-
-            c1, c2 = st.columns(2)
-            with c1:
-                old_label = st.text_input("Old Application Label", "Old Application:", key="windows_app_old_label")
-                old_image = st.file_uploader(
-                    "Old Application Image", type=["png", "jpg", "jpeg"], key="windows_app_old_image"
-                )
-            with c2:
-                new_label = st.text_input("New Application Label", "New Application:", key="windows_app_new_label")
-                new_image = st.file_uploader(
-                    "New Application Image", type=["png", "jpg", "jpeg"], key="windows_app_new_image"
-                )
-
-            support = st.text_area(
-                "Temporary Support Instruction", "",
-                placeholder="If you encounter any issues, you may temporarily continue using the Remote Desktop app and inform IT Helpdesk immediately.",
-                height=85, key="windows_app_support",
-            )
-            decommission = st.text_area(
-                "Decommissioning Notice", "",
-                placeholder="A separate announcement will be sent prior to the official decommissioning and uninstallation of the Remote Desktop app.",
-                height=85, key="windows_app_decommission",
+            content = st.text_area(
+                "Bulletin Content", "",
+                placeholder="Enter or paste the complete bulletin message here. Use blank lines to separate paragraphs.",
+                height=360, key="bulletin_content",
             )
             closing = st.text_input(
-                "Closing", "", placeholder="Thank you for your cooperation.", key="windows_app_closing"
+                "Closing", "", placeholder="Thank you for your cooperation.", key="bulletin_closing"
             )
-            regards = st.text_input("Sign-off", "Regards,", key="windows_app_regards")
-            team_1 = st.text_input("Team / Department 1", "Global Helpdesk Operations", key="windows_app_team_1")
-            team_2 = st.text_input("Team / Department 2", "IT Operations", key="windows_app_team_2")
+            regards = st.text_input("Sign-off", "Regards,", key="bulletin_regards")
+            team_1 = st.text_input("Team / Department 1", "Global Helpdesk Operations", key="bulletin_team_1")
+            team_2 = st.text_input("Team / Department 2", "IT Operations", key="bulletin_team_2")
 
-            html_output = windows_app_transition_html(
-                greeting, intro, notice, purpose, action_intro, action_1, action_2,
-                rollout, availability, old_label, new_label, old_image, new_image,
-                support, decommission, closing, regards, team_1, team_2,
-            )
-            filename = "Windows_App_Transition_Advisory.html"
+            html_output = bulletin_html(greeting, content, closing, regards, team_1, team_2)
+            filename = "Bulletin_Advisory.html"
             preview_height = 740
 
         # =====================================================
@@ -2493,7 +2384,7 @@ if not st.session_state.preview_only:
                 "Emergency Maintenance Advisory",
                 "Incident Advisory",
                 "Global Incident Broadcast Notification",
-                "Windows App Transition Advisory",
+                "Bulletin Advisory",
                 "DD Approval Template",
             ],
             key="repository_filter",
