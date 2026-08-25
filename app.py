@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 
 st.set_page_config(
-    page_title="Broadcast Notification System",
+    page_title="IT Broadcast Notification Generator",
     page_icon="📢",
     layout="wide",
 )
@@ -38,32 +38,6 @@ def calculate_duration(start_time, end_time):
 
     if end_dt < start_dt:
         end_dt += timedelta(days=1)
-
-    total_minutes = int((end_dt - start_dt).total_seconds() // 60)
-    hours, minutes = divmod(total_minutes, 60)
-    return f"{hours:02d} hour(s) and {minutes:02d} minute(s)"
-
-
-def clean_timezone_label(label):
-    if not label:
-        return ""
-    return (
-        str(label)
-        .replace(" (PH Time)", " PH Time")
-        .replace(" (SL Time)", " SL Time")
-    )
-
-
-def calculate_duration_with_dates(start_date, start_time, end_date, end_time):
-    if not start_date or not start_time or not end_time:
-        return ""
-
-    end_date = end_date or start_date
-    start_dt = datetime.combine(start_date, start_time)
-    end_dt = datetime.combine(end_date, end_time)
-
-    if end_dt < start_dt:
-        return ""
 
     total_minutes = int((end_dt - start_dt).total_seconds() // 60)
     hours, minutes = divmod(total_minutes, 60)
@@ -152,17 +126,31 @@ def clear_form():
         "global_timezone_1",
         "global_timezone_2",
         "emergency_timezone",
-        "local_end_date",
-        "local_end_date2",
-        "isp_end_date1",
-        "isp_end_date2",
-        "isp_down_end_date1",
-        "isp_down_end_date2",
-        "global_ph_end_date",
-        "global_sl_end_date",
-        "emergency_end_date",
-        "incident_resolved_date",
-        "global_incident_resolved_date",
+        "global_incident_ticket",
+        "global_incident_summary",
+        "global_incident_date",
+        "global_incident_time",
+        "global_incident_resolved",
+        "global_incident_resolved_time",
+        "global_incident_impact",
+        "global_incident_background",
+        "global_incident_workaround",
+        "global_incident_update",
+        "global_incident_root_cause",
+        "global_incident_show_workaround",
+        "global_incident_show_update",
+        "global_incident_show_root_cause",
+
+        # Windows App Transition
+        "windows_app_greeting", "windows_app_intro", "windows_app_notice",
+        "windows_app_purpose", "windows_app_action_intro",
+        "windows_app_action_1", "windows_app_action_2",
+        "windows_app_rollout", "windows_app_availability",
+        "windows_app_old_label", "windows_app_new_label",
+        "windows_app_old_image", "windows_app_new_image",
+        "windows_app_support", "windows_app_decommission",
+        "windows_app_closing", "windows_app_regards",
+        "windows_app_team_1", "windows_app_team_2",
     ]
 
     for key in keys:
@@ -250,17 +238,30 @@ REPOSITORY_KEYS = [
     "global_timezone_1",
     "global_timezone_2",
     "emergency_timezone",
-    "local_end_date",
-    "local_end_date2",
-    "isp_end_date1",
-    "isp_end_date2",
-    "isp_down_end_date1",
-    "isp_down_end_date2",
-    "global_ph_end_date",
-    "global_sl_end_date",
-    "emergency_end_date",
-    "incident_resolved_date",
-    "global_incident_resolved_date",
+    "global_incident_ticket",
+    "global_incident_summary",
+    "global_incident_date",
+    "global_incident_time",
+    "global_incident_resolved",
+    "global_incident_resolved_time",
+    "global_incident_impact",
+    "global_incident_background",
+    "global_incident_workaround",
+    "global_incident_update",
+    "global_incident_root_cause",
+    "global_incident_show_workaround",
+    "global_incident_show_update",
+    "global_incident_show_root_cause",
+
+    # Windows App Transition (uploaded images are intentionally not persisted)
+    "windows_app_greeting", "windows_app_intro", "windows_app_notice",
+    "windows_app_purpose", "windows_app_action_intro",
+    "windows_app_action_1", "windows_app_action_2",
+    "windows_app_rollout", "windows_app_availability",
+    "windows_app_old_label", "windows_app_new_label",
+    "windows_app_support", "windows_app_decommission",
+    "windows_app_closing", "windows_app_regards",
+    "windows_app_team_1", "windows_app_team_2",
 ]
 
 
@@ -405,7 +406,7 @@ def repository_metadata(template_type):
             st.session_state.get("emergency_workaround", ""),
         ]
 
-    else:
+    elif template_type == "Incident Advisory":
         ticket = st.session_state.get("incident_ticket", "")
         title = (
             st.session_state.get("incident_summary", "")
@@ -419,6 +420,35 @@ def repository_metadata(template_type):
             st.session_state.get("incident_workaround", ""),
             st.session_state.get("incident_update", ""),
             st.session_state.get("incident_root_cause", ""),
+        ]
+
+    elif template_type == "Windows App Transition Advisory":
+        ticket = ""
+        title = st.session_state.get("windows_app_notice", "") or "Windows App Transition Advisory"
+        search_parts = [
+            st.session_state.get("windows_app_intro", ""),
+            st.session_state.get("windows_app_notice", ""),
+            st.session_state.get("windows_app_purpose", ""),
+            st.session_state.get("windows_app_action_1", ""),
+            st.session_state.get("windows_app_action_2", ""),
+            st.session_state.get("windows_app_support", ""),
+            st.session_state.get("windows_app_decommission", ""),
+        ]
+
+    else:
+        ticket = st.session_state.get("global_incident_ticket", "")
+        title = (
+            st.session_state.get("global_incident_summary", "")
+            or st.session_state.get("global_incident_background", "")
+        )
+        search_parts = [
+            ticket,
+            st.session_state.get("global_incident_summary", ""),
+            st.session_state.get("global_incident_impact", ""),
+            st.session_state.get("global_incident_background", ""),
+            st.session_state.get("global_incident_workaround", ""),
+            st.session_state.get("global_incident_update", ""),
+            st.session_state.get("global_incident_root_cause", ""),
         ]
 
     title = title.strip() or ticket.strip() or template_type
@@ -608,52 +638,34 @@ def make_row(label, value, row_class="normal"):
 
 
 def local_html(ticket, summary, activity, objective,
-               maintenance_date, start_time, end_date, end_time,
-               add_second, maintenance_date2, start_time2, end_date2, end_time2,
+               maintenance_date, start_time, end_time,
+               add_second, maintenance_date2, start_time2, end_time2,
                timezone_label,
                affected_service, impact, workaround, options):
 
-    duration1 = calculate_duration_with_dates(maintenance_date, start_time, end_date, end_time)
-    duration2 = calculate_duration_with_dates(maintenance_date2, start_time2, end_date2, end_time2) if add_second else ""
+    duration1 = calculate_duration(start_time, end_time)
+    duration2 = calculate_duration(start_time2, end_time2) if add_second else ""
 
     schedule_lines = []
-
-    def _local_range(sd, stime, ed, etime, prefix=""):
-        if not sd or not stime or not etime:
-            return ""
-        ed = ed or sd
-        if ed == sd:
-            txt = (
-                f"{format_date(sd)} from {format_time(stime)} "
-                f"to {format_time(etime)} ({timezone_label})"
-            )
-        else:
-            txt = (
-                f"{format_date(sd)} {format_time(stime)} to "
-                f"{format_date(ed)} {format_time(etime)} "
-                f"({clean_timezone_label(timezone_label)})"
-            )
-        return f"{prefix}{txt}" if prefix else txt
-
     if add_second:
-        first = _local_range(
-            maintenance_date, start_time, end_date, end_time,
-            "1st Maintenance: "
+        if maintenance_date and start_time and end_time:
+            schedule_lines.append(
+                f"1st Maintenance: {format_date(maintenance_date)} from "
+                f"{format_time(start_time)} to {format_time(end_time)} "
+                f"({timezone_label})"
+            )
+        if maintenance_date2 and start_time2 and end_time2:
+            schedule_lines.append(
+                f"2nd Maintenance: {format_date(maintenance_date2)} from "
+                f"{format_time(start_time2)} to {format_time(end_time2)} "
+                f"({timezone_label})"
+            )
+    elif maintenance_date and start_time and end_time:
+        schedule_lines.append(
+            f"{format_date(maintenance_date)} from "
+            f"{format_time(start_time)} to {format_time(end_time)} "
+            f"({timezone_label})"
         )
-        second = _local_range(
-            maintenance_date2, start_time2, end_date2, end_time2,
-            "2nd Maintenance: "
-        )
-        if first:
-            schedule_lines.append(first)
-        if second:
-            schedule_lines.append(second)
-    else:
-        first = _local_range(
-            maintenance_date, start_time, end_date, end_time
-        )
-        if first:
-            schedule_lines.append(first)
 
     duration_lines = []
     if add_second:
@@ -704,46 +716,33 @@ def local_html(ticket, summary, activity, objective,
 </table></div></body></html>"""
 
 
-def isp_html(ticket, activity, summary, objective, date1, start1, end_date1, end1,
-             add_second, date2, start2, end_date2, end2,
-             down_date1, down_start1, down_end_date1, down_end1,
-             down_date2, down_start2, down_end_date2, down_end2,
+def isp_html(ticket, activity, summary, objective, date1, start1, end1,
+             add_second, date2, start2, end2,
+             down_date1, down_start1, down_end1,
+             down_date2, down_start2, down_end2,
              timezone_label,
              impact, workaround, options):
 
-    duration1 = calculate_duration_with_dates(date1, start1, end_date1, end1)
-    duration2 = calculate_duration_with_dates(date2, start2, end_date2, end2) if add_second else ""
+    duration1 = calculate_duration(start1, end1)
+    duration2 = calculate_duration(start2, end2) if add_second else ""
 
     schedules = []
-
-    def _isp_range(sd, stime, ed, etime, prefix=""):
-        if not sd or not stime or not etime:
-            return ""
-        ed = ed or sd
-        if ed == sd:
-            txt = (
-                f"{format_date(sd)} from {format_time(stime)} – "
-                f"{format_time(etime)} ({timezone_label})"
-            )
-        else:
-            txt = (
-                f"{format_date(sd)} {format_time(stime)} – "
-                f"{format_date(ed)} {format_time(etime)} "
-                f"({clean_timezone_label(timezone_label)})"
-            )
-        return f"{prefix}{txt}" if prefix else txt
-
     if add_second:
-        first = _isp_range(date1, start1, end_date1, end1, "1st Maintenance: ")
-        second = _isp_range(date2, start2, end_date2, end2, "2nd Maintenance: ")
-        if first:
-            schedules.append(first)
-        if second:
-            schedules.append(second)
-    else:
-        first = _isp_range(date1, start1, end_date1, end1)
-        if first:
-            schedules.append(first)
+        if date1 and start1 and end1:
+            schedules.append(
+                f"1st Maintenance: {format_date(date1)} from "
+                f"{format_time(start1)} – {format_time(end1)} ({timezone_label})"
+            )
+        if date2 and start2 and end2:
+            schedules.append(
+                f"2nd Maintenance: {format_date(date2)} from "
+                f"{format_time(start2)} – {format_time(end2)} ({timezone_label})"
+            )
+    elif date1 and start1 and end1:
+        schedules.append(
+            f"{format_date(date1)} from "
+            f"{format_time(start1)} – {format_time(end1)} ({timezone_label})"
+        )
 
     durations = []
     if add_second:
@@ -756,24 +755,21 @@ def isp_html(ticket, activity, summary, objective, date1, start1, end_date1, end
 
     downtime = []
     if add_second:
-        first_down = _isp_range(
-            down_date1, down_start1, down_end_date1, down_end1,
-            "1st Maintenance: "
+        if down_date1 and down_start1 and down_end1:
+            downtime.append(
+                f"1st Maintenance: {format_date(down_date1)} from "
+                f"{format_time(down_start1)} – {format_time(down_end1)} ({timezone_label})"
+            )
+        if down_date2 and down_start2 and down_end2:
+            downtime.append(
+                f"2nd Maintenance: {format_date(down_date2)} from "
+                f"{format_time(down_start2)} – {format_time(down_end2)} ({timezone_label})"
+            )
+    elif down_date1 and down_start1 and down_end1:
+        downtime.append(
+            f"{format_date(down_date1)} from "
+            f"{format_time(down_start1)} – {format_time(down_end1)} ({timezone_label})"
         )
-        second_down = _isp_range(
-            down_date2, down_start2, down_end_date2, down_end2,
-            "2nd Maintenance: "
-        )
-        if first_down:
-            downtime.append(first_down)
-        if second_down:
-            downtime.append(second_down)
-    else:
-        first_down = _isp_range(
-            down_date1, down_start1, down_end_date1, down_end1
-        )
-        if first_down:
-            downtime.append(first_down)
 
     rows = [make_row("For Ticket Number:", escape(ticket), "ticket")]
 
@@ -817,12 +813,10 @@ def global_html(
     objective,
     ph_date,
     ph_start,
-    ph_end_date,
     ph_end,
     timezone_1,
     sl_date,
     sl_start,
-    sl_end_date,
     sl_end,
     timezone_2,
     impact,
@@ -830,31 +824,19 @@ def global_html(
     options,
 ):
     # Duration is calculated from the PH schedule if available.
-    duration = calculate_duration_with_dates(ph_date, ph_start, ph_end_date, ph_end)
+    duration = calculate_duration(ph_start, ph_end)
 
     schedule_lines = []
-
-    def _global_range(sd, stime, ed, etime, tz):
-        if not sd or not stime or not etime:
-            return ""
-        ed = ed or sd
-        if ed == sd:
-            return (
-                f"{format_date(sd)} {format_time(stime)} to "
-                f"{format_time(etime)} ({tz})"
-            )
-        return (
-            f"{format_date(sd)} {format_time(stime)} to "
-            f"{format_date(ed)} {format_time(etime)} ({tz})"
+    if ph_date and ph_start and ph_end:
+        schedule_lines.append(
+            f"{format_date(ph_date)} {format_time(ph_start)} to "
+            f"{format_time(ph_end)} ({timezone_1})"
         )
-
-    ph_line = _global_range(ph_date, ph_start, ph_end_date, ph_end, timezone_1)
-    sl_line = _global_range(sl_date, sl_start, sl_end_date, sl_end, timezone_2)
-
-    if ph_line:
-        schedule_lines.append(ph_line)
-    if sl_line:
-        schedule_lines.append(sl_line)
+    if sl_date and sl_start and sl_end:
+        schedule_lines.append(
+            f"{format_date(sl_date)} {format_time(sl_start)} to "
+            f"{format_time(sl_end)} ({timezone_2})"
+        )
 
     rows = [
         make_row("Ticket No.", f"Ticket No. {escape(ticket)}", "ticket")
@@ -928,7 +910,6 @@ def emergency_html(
     objective,
     maintenance_date,
     start_time,
-    end_date,
     end_time,
     timezone_label,
     downtime,
@@ -936,26 +917,15 @@ def emergency_html(
     workaround,
     options,
 ):
-    duration = calculate_duration_with_dates(
-        maintenance_date, start_time, end_date, end_time
-    )
+    duration = calculate_duration(start_time, end_time)
 
     schedule = ""
     if maintenance_date and start_time and end_time:
-        finish_date = end_date or maintenance_date
-
-        if finish_date == maintenance_date:
-            schedule = (
-                f"{format_date(maintenance_date)}, from "
-                f"{format_time(start_time)} to {format_time(end_time)} "
-                f"({clean_timezone_label(timezone_label)})"
-            )
-        else:
-            schedule = (
-                f"{format_date(maintenance_date)}, {format_time(start_time)} to "
-                f"{format_date(finish_date)}, {format_time(end_time)} "
-                f"({clean_timezone_label(timezone_label)})"
-            )
+        schedule = (
+            f"{format_date(maintenance_date)}, from "
+            f"{format_time(start_time)} to {format_time(end_time)} "
+            f"({timezone_label})"
+        )
 
     rows = [
         make_row("Ticket No.:", escape(ticket), "ticket")
@@ -1049,7 +1019,6 @@ def incident_html(
     incident_date,
     incident_time,
     incident_resolved,
-    incident_resolved_date,
     incident_resolved_time,
     impact,
     background,
@@ -1063,51 +1032,32 @@ def incident_html(
     incident_dt = ""
 
     if incident_date:
+        # Example: August 13, 2026
         incident_date_text = incident_date.strftime("%B %d, %Y")
     else:
         incident_date_text = ""
 
     if incident_resolved:
-        resolved_date = incident_resolved_date or incident_date
-        resolved_date_text = (
-            resolved_date.strftime("%B %d, %Y")
-            if resolved_date else ""
-        )
-
         if incident_date_text and incident_time and incident_resolved_time:
-            if resolved_date and incident_date and resolved_date != incident_date:
-                incident_dt = (
-                    f"{incident_date_text}, {format_time(incident_time)} to "
-                    f"{resolved_date_text}, {format_time(incident_resolved_time)} "
-                    f"(GMT +5:30 SL Time) - Resolved"
-                )
-            else:
-                incident_dt = (
-                    f"{incident_date_text}, {format_time(incident_time)} – "
-                    f"{format_time(incident_resolved_time)} "
-                    f"(GMT +5:30 SL Time) - Resolved"
-                )
+            incident_dt = (
+                f"{incident_date_text}, {format_time(incident_time)} – "
+                f"{format_time(incident_resolved_time)} (SL Time) - Resolved"
+            )
         elif incident_date_text and incident_time:
             incident_dt = (
                 f"{incident_date_text}, {format_time(incident_time)} "
-                f"(GMT +5:30 SL Time) - Resolved"
+                f"(SL Time) - Resolved"
             )
         elif incident_date_text:
-            incident_dt = (
-                f"{incident_date_text} "
-                f"(GMT +5:30 SL Time) - Resolved"
-            )
+            incident_dt = f"{incident_date_text} (SL Time) - Resolved"
     else:
         if incident_date_text and incident_time:
             incident_dt = (
                 f"{incident_date_text}, {format_time(incident_time)} "
-                f"(GMT +5:30 SL Time) – Ongoing"
+                f"(SL Time) – Ongoing"
             )
         elif incident_date_text:
-            incident_dt = (
-                f"{incident_date_text} "
-                f"(GMT +5:30 SL Time) – Ongoing"
-            )
+            incident_dt = f"{incident_date_text} (SL Time) – Ongoing"
 
     rows = [
         make_row("Ticket No.:", escape(ticket), "ticket"),
@@ -1140,6 +1090,105 @@ def incident_html(
 <table class="broadcast-table">
 <colgroup><col class="label-col"><col class="value-col"></colgroup>
 <tr><th colspan="2" class="title">Incident Advisory</th></tr>
+{''.join(rows)}
+</table>
+</div>
+</body>
+</html>"""
+
+
+
+# =========================================================
+# GLOBAL INCIDENT BROADCAST NOTIFICATION
+# =========================================================
+
+GLOBAL_INCIDENT_RED = "#CF2417"
+
+def global_incident_html(
+    ticket,
+    summary,
+    incident_date,
+    incident_time,
+    incident_resolved,
+    incident_resolved_time,
+    impact,
+    background,
+    workaround,
+    update,
+    root_cause,
+    show_workaround=True,
+    show_update=True,
+    show_root_cause=True,
+):
+    incident_dt = ""
+
+    if incident_date:
+        incident_date_text = incident_date.strftime("%B %d, %Y")
+    else:
+        incident_date_text = ""
+
+    if incident_resolved:
+        if incident_date_text and incident_time and incident_resolved_time:
+            incident_dt = (
+                f"{incident_date_text}, from {format_time(incident_time)} "
+                f"to {format_time(incident_resolved_time)} "
+                f"(GMT +5:30 SL Time) – Resolved"
+            )
+        elif incident_date_text and incident_time:
+            incident_dt = (
+                f"{incident_date_text}, from {format_time(incident_time)} "
+                f"(GMT +5:30 SL Time) – Resolved"
+            )
+        elif incident_date_text:
+            incident_dt = f"{incident_date_text} (GMT +5:30 SL Time) – Resolved"
+    else:
+        if incident_date_text and incident_time:
+            incident_dt = (
+                f"{incident_date_text}, from {format_time(incident_time)} "
+                f"(GMT +5:30 SL Time) – Ongoing"
+            )
+        elif incident_date_text:
+            incident_dt = f"{incident_date_text} (GMT +5:30 SL Time) – Ongoing"
+
+    rows = [
+        make_row("Ticket No:", escape(ticket), "ticket"),
+        make_row("Summary:", escape(summary), "normal"),
+        make_row("Date/Time of Incident:", escape(incident_dt), "normal"),
+        make_row("Service / Module Impact:", escape(impact), "normal"),
+        make_row("Incident Background:", escape(background), "medium"),
+    ]
+
+    if show_workaround:
+        rows.append(make_row("Workaround:", escape(workaround), "normal"))
+
+    if show_update:
+        rows.append(make_row("Update:", escape(update), "medium"))
+
+    if show_root_cause:
+        rows.append(make_row("Root Cause:", escape(root_cause), "normal"))
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Global Incident Broadcast Notification</title>
+{maintenance_css(GLOBAL_INCIDENT_RED)}
+<style>
+.broadcast-table .title {{
+    color:#FFFFFF;
+}}
+.broadcast-table .label {{
+    color:#FFFFFF;
+}}
+</style>
+</head>
+<body>
+<div class="broadcast-wrap">
+<table class="broadcast-table">
+<colgroup><col class="label-col"><col class="value-col"></colgroup>
+<tr>
+    <th colspan="2" class="title">Global Incident Broadcast Notification</th>
+</tr>
 {''.join(rows)}
 </table>
 </div>
@@ -1306,6 +1355,81 @@ a{{color:#0563C1}}
 
 
 
+def windows_app_transition_html(
+    greeting, intro, notice, purpose, action_intro, action_1, action_2,
+    rollout, availability, old_label, new_label, old_image, new_image,
+    support, decommission, closing, regards, team_1, team_2,
+):
+    def text(value):
+        return escape(value or "").replace("\n", "<br>")
+
+    old_image_html = uploaded_image_html(old_image, 82)
+    new_image_html = uploaded_image_html(new_image, 82)
+
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Windows App Transition Advisory</title>
+<style>
+html,body{{margin:0;padding:0;background:#fff}}
+*{{box-sizing:border-box}}
+.announcement{{
+    width:572px;margin:0 auto;padding:10px 8px 20px;
+    border:3px double #4F7FD8;background:#fff;color:#111;
+    font-family:Arial,Helvetica,sans-serif;font-size:9px;line-height:1.35;
+}}
+.brand{{font-size:29px;line-height:1;color:#2F5597;margin:8px 0 18px}}
+p{{margin:0 0 10px}}
+.strong{{font-weight:700}}
+ul{{margin:4px 0 12px 24px;padding:0}}
+li{{margin:0 0 12px}}
+.app-block{{margin:2px 0 17px}}
+.app-label{{font-weight:700;margin-bottom:3px}}
+.app-block img{{margin-top:3px!important;max-height:84px!important}}
+.signature{{margin-top:15px}}
+@media print{{
+ body{{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+ .announcement{{margin:0}}
+ @page{{margin:0}}
+}}
+</style>
+</head>
+<body>
+<div class="announcement">
+  <div class="brand">GICT</div>
+  <p>{text(greeting)}</p>
+  <p>{text(intro)}</p>
+  <p>{text(notice)}</p>
+  <p>{text(purpose)}</p>
+  <p class="strong">{text(action_intro)}</p>
+  <ul>
+    <li>{text(action_1)}</li>
+    <li>{text(action_2)}</li>
+  </ul>
+  <p>{text(rollout)}</p>
+  <p>{text(availability)}</p>
+  <div class="app-block">
+    <div class="app-label">{text(old_label)}</div>
+    {old_image_html}
+  </div>
+  <div class="app-block">
+    <div class="app-label">{text(new_label)}</div>
+    {new_image_html}
+  </div>
+  <p>{text(support)}</p>
+  <p>{text(decommission)}</p>
+  <p>{text(closing)}</p>
+  <div class="signature">
+    <div class="strong">{text(regards)}</div>
+    <div>{text(team_1)}</div>
+    <div>{text(team_2)}</div>
+  </div>
+</div>
+</body>
+</html>"""
+
+
 def has_meaningful_content(template_name):
     if template_name == "Local Maintenance Advisory":
         keys = [
@@ -1333,6 +1457,20 @@ def has_meaningful_content(template_name):
             "incident_ticket", "incident_summary", "incident_impact",
             "incident_background", "incident_workaround",
             "incident_update", "incident_root_cause",
+        ]
+    elif template_name == "Global Incident Broadcast Notification":
+        keys = [
+            "global_incident_ticket", "global_incident_summary",
+            "global_incident_impact", "global_incident_background",
+            "global_incident_workaround", "global_incident_update",
+            "global_incident_root_cause",
+        ]
+    elif template_name == "Windows App Transition Advisory":
+        keys = [
+            "windows_app_intro", "windows_app_notice", "windows_app_purpose",
+            "windows_app_action_1", "windows_app_action_2",
+            "windows_app_rollout", "windows_app_availability",
+            "windows_app_support", "windows_app_decommission",
         ]
     else:
         keys = [
@@ -1419,8 +1557,8 @@ if "blank_start" not in st.session_state:
 
 st.markdown("""
 <div class="app-hero">
-<h1>📢 Broadcast Notification System</h1>
-<p>Create Local, ISP, Global, Emergency Maintenance, Incident, and DD Approval templates.</p>
+<h1>📢 IT Broadcast Notification Generator</h1>
+<p>Create maintenance, incident, Windows App transition, and DD Approval templates.</p>
 </div>
 """, unsafe_allow_html=True)
 
@@ -1432,6 +1570,8 @@ template = st.selectbox(
         "Global Maintenance Advisory",
         "Emergency Maintenance Advisory",
         "Incident Advisory",
+        "Global Incident Broadcast Notification",
+        "Windows App Transition Advisory",
         "DD Approval Template",
     ],
     key="broadcast_template",
@@ -1464,19 +1604,11 @@ if not st.session_state.preview_only:
             activity = st.text_area("Activity", "" if cleared else "Provisioning and Testing of New Network Backup Link between SL Office and TW New Data Center", key="local_activity")
             objective = st.text_area("Objective", "" if cleared else "To establish a new backup connection between SL Office and TW New Data Center prior to the migration of services to the New Data Center", key="local_objective")
             st.markdown("**1st Maintenance**")
-            c1,c2 = st.columns(2)
-            with c1:
-                maintenance_date = st.date_input(
-                    "1st Start Date",
-                    value=None if cleared else datetime(2026,8,20).date(),
-                    key="local_date"
-                )
-            with c2:
-                end_date = st.date_input(
-                    "1st End Date",
-                    value=None if cleared else datetime(2026,8,20).date(),
-                    key="local_end_date"
-                )
+            maintenance_date = st.date_input(
+                "1st Maintenance Date",
+                value=None if cleared else datetime(2026,8,20).date(),
+                key="local_date"
+            )
             c1,c2 = st.columns(2)
             with c1:
                 start_time = st.time_input(
@@ -1508,19 +1640,11 @@ if not st.session_state.preview_only:
 
             if add_second:
                 st.markdown("**2nd Maintenance**")
-                c1,c2 = st.columns(2)
-                with c1:
-                    maintenance_date2 = st.date_input(
-                        "2nd Start Date",
-                        value=None if cleared else datetime(2026,8,21).date(),
-                        key="local_date2"
-                    )
-                with c2:
-                    end_date2 = st.date_input(
-                        "2nd End Date",
-                        value=None if cleared else datetime(2026,8,21).date(),
-                        key="local_end_date2"
-                    )
+                maintenance_date2 = st.date_input(
+                    "2nd Maintenance Date",
+                    value=None if cleared else datetime(2026,8,21).date(),
+                    key="local_date2"
+                )
                 c1,c2 = st.columns(2)
                 with c1:
                     start_time2 = st.time_input(
@@ -1536,12 +1660,11 @@ if not st.session_state.preview_only:
                     )
             else:
                 maintenance_date2 = None
-                end_date2 = None
                 start_time2 = None
                 end_time2 = None
 
-            duration1 = calculate_duration_with_dates(maintenance_date, start_time, end_date, end_time)
-            duration2 = calculate_duration_with_dates(maintenance_date2, start_time2, end_date2, end_time2) if add_second else ""
+            duration1 = calculate_duration(start_time, end_time)
+            duration2 = calculate_duration(start_time2, end_time2) if add_second else ""
 
             if add_second:
                 st.text_area(
@@ -1566,8 +1689,8 @@ if not st.session_state.preview_only:
             }
             html_output = local_html(
                 ticket, summary, activity, objective,
-                maintenance_date, start_time, end_date, end_time,
-                add_second, maintenance_date2, start_time2, end_date2, end_time2,
+                maintenance_date, start_time, end_time,
+                add_second, maintenance_date2, start_time2, end_time2,
                 timezone_label,
                 affected, impact, workaround, options
             )
@@ -1595,11 +1718,7 @@ if not st.session_state.preview_only:
             objective = st.text_area("Objective", "" if cleared else "To perform urgent maintenance on our IPLC06 service to ensure continued service reliability and minimize the risk of unexpected disruptions.", key="isp_objective")
 
             st.markdown("**1st Maintenance**")
-            c1,c2 = st.columns(2)
-            with c1:
-                date1 = st.date_input("1st Start Date", value=None if cleared else datetime(2026,8,12).date(), key="isp_date1")
-            with c2:
-                end_date1 = st.date_input("1st End Date", value=None if cleared else datetime(2026,8,12).date(), key="isp_end_date1")
+            date1 = st.date_input("1st Maintenance Date", value=None if cleared else datetime(2026,8,12).date(), key="isp_date1")
             c1,c2 = st.columns(2)
             with c1:
                 start1 = st.time_input("1st Start Time", value=None if cleared else datetime.strptime("10:00","%H:%M").time(), key="isp_start1")
@@ -1614,43 +1733,31 @@ if not st.session_state.preview_only:
 
             add_second = st.checkbox("➕ Add 2nd Maintenance", False, key="isp_add_second")
             if add_second:
-                c1,c2 = st.columns(2)
-                with c1:
-                    date2 = st.date_input("2nd Start Date", value=None if cleared else datetime(2026,8,13).date(), key="isp_date2")
-                with c2:
-                    end_date2 = st.date_input("2nd End Date", value=None if cleared else datetime(2026,8,13).date(), key="isp_end_date2")
+                date2 = st.date_input("2nd Maintenance Date", value=None if cleared else datetime(2026,8,13).date(), key="isp_date2")
                 c1,c2 = st.columns(2)
                 with c1:
                     start2 = st.time_input("2nd Start Time", value=None if cleared else datetime.strptime("07:30","%H:%M").time(), key="isp_start2")
                 with c2:
                     end2 = st.time_input("2nd End Time", value=None if cleared else datetime.strptime("11:30","%H:%M").time(), key="isp_end2")
             else:
-                date2=end_date2=start2=end2=None
+                date2=start2=end2=None
 
             st.markdown("**Scheduled Downtime**")
-            c1,c2 = st.columns(2)
-            with c1:
-                down_date1 = st.date_input("1st Downtime Start Date", value=None if cleared else datetime(2026,8,12).date(), key="isp_down_date1")
-            with c2:
-                down_end_date1 = st.date_input("1st Downtime End Date", value=None if cleared else datetime(2026,8,12).date(), key="isp_down_end_date1")
+            down_date1 = st.date_input("1st Downtime Date", value=None if cleared else datetime(2026,8,12).date(), key="isp_down_date1")
             c1,c2 = st.columns(2)
             with c1:
                 down_start1 = st.time_input("1st Downtime Start", value=None if cleared else datetime.strptime("10:00","%H:%M").time(), key="isp_down_start1")
             with c2:
                 down_end1 = st.time_input("1st Downtime End", value=None if cleared else datetime.strptime("18:00","%H:%M").time(), key="isp_down_end1")
             if add_second:
-                c1,c2 = st.columns(2)
-                with c1:
-                    down_date2 = st.date_input("2nd Downtime Start Date", value=None if cleared else datetime(2026,8,13).date(), key="isp_down_date2")
-                with c2:
-                    down_end_date2 = st.date_input("2nd Downtime End Date", value=None if cleared else datetime(2026,8,13).date(), key="isp_down_end_date2")
+                down_date2 = st.date_input("2nd Downtime Date", value=None if cleared else datetime(2026,8,13).date(), key="isp_down_date2")
                 c1,c2 = st.columns(2)
                 with c1:
                     down_start2 = st.time_input("2nd Downtime Start", value=None if cleared else datetime.strptime("07:30","%H:%M").time(), key="isp_down_start2")
                 with c2:
                     down_end2 = st.time_input("2nd Downtime End", value=None if cleared else datetime.strptime("11:30","%H:%M").time(), key="isp_down_end2")
             else:
-                down_date2=down_end_date2=down_start2=down_end2=None
+                down_date2=down_start2=down_end2=None
 
             impact = st.text_input("Service Module Impact", "" if cleared else "No service impact is expected", key="isp_impact")
             workaround = st.text_area("Workaround", "" if cleared else "Network traffic will automatically swing to alternative network paths during the maintenance.", key="isp_workaround")
@@ -1660,10 +1767,10 @@ if not st.session_state.preview_only:
                 "schedule":show_schedule,"duration":show_duration,"downtime":show_downtime,
                 "impact":show_impact,"workaround":show_workaround
             }
-            html_output = isp_html(ticket,activity,summary,objective,date1,start1,end_date1,end1,
-                                   add_second,date2,start2,end_date2,end2,down_date1,down_start1,
-                                   down_end_date1,down_end1,down_date2,down_start2,down_end_date2,down_end2,
-                                   timezone_label,impact,workaround,options)
+            html_output = isp_html(ticket,activity,summary,objective,date1,start1,end1,
+                                   add_second,date2,start2,end2,down_date1,down_start1,
+                                   down_end1,down_date2,down_start2,down_end2,timezone_label,
+                                   impact,workaround,options)
             filename = "ISP_Maintenance_Advisory.html"
             preview_height = 620
 
@@ -1706,19 +1813,11 @@ if not st.session_state.preview_only:
             )
 
             st.markdown("**PH Schedule**")
-            c1,c2 = st.columns(2)
-            with c1:
-                ph_date = st.date_input(
-                    "PH Start Date",
-                    value=None if cleared else datetime(2026,6,19).date(),
-                    key="global_ph_date",
-                )
-            with c2:
-                ph_end_date = st.date_input(
-                    "PH End Date",
-                    value=None if cleared else datetime(2026,6,19).date(),
-                    key="global_ph_end_date",
-                )
+            ph_date = st.date_input(
+                "PH Maintenance Date",
+                value=None if cleared else datetime(2026,6,19).date(),
+                key="global_ph_date",
+            )
             c1,c2 = st.columns(2)
             with c1:
                 ph_start = st.time_input(
@@ -1741,19 +1840,11 @@ if not st.session_state.preview_only:
             )
 
             st.markdown("**SL Schedule**")
-            c1,c2 = st.columns(2)
-            with c1:
-                sl_date = st.date_input(
-                    "SL Start Date",
-                    value=None if cleared else datetime(2026,6,19).date(),
-                    key="global_sl_date",
-                )
-            with c2:
-                sl_end_date = st.date_input(
-                    "SL End Date",
-                    value=None if cleared else datetime(2026,6,19).date(),
-                    key="global_sl_end_date",
-                )
+            sl_date = st.date_input(
+                "SL Maintenance Date",
+                value=None if cleared else datetime(2026,6,19).date(),
+                key="global_sl_date",
+            )
             c1,c2 = st.columns(2)
             with c1:
                 sl_start = st.time_input(
@@ -1777,7 +1868,7 @@ if not st.session_state.preview_only:
 
             st.text_input(
                 "Duration",
-                value=calculate_duration_with_dates(ph_date, ph_start, ph_end_date, ph_end),
+                value=calculate_duration(ph_start, ph_end),
                 disabled=True,
             )
 
@@ -1810,8 +1901,8 @@ if not st.session_state.preview_only:
 
             html_output = global_html(
                 ticket, activity, summary, objective,
-                ph_date, ph_start, ph_end_date, ph_end, timezone_1,
-                sl_date, sl_start, sl_end_date, sl_end, timezone_2,
+                ph_date, ph_start, ph_end, timezone_1,
+                sl_date, sl_start, sl_end, timezone_2,
                 impact, workaround, options
             )
 
@@ -1866,19 +1957,11 @@ if not st.session_state.preview_only:
                 key="emergency_objective",
             )
 
-            c1,c2 = st.columns(2)
-            with c1:
-                maintenance_date = st.date_input(
-                    "Start Date",
-                    value=None if cleared else datetime(2026,6,15).date(),
-                    key="emergency_date",
-                )
-            with c2:
-                end_date = st.date_input(
-                    "End Date",
-                    value=None if cleared else datetime(2026,6,15).date(),
-                    key="emergency_end_date",
-                )
+            maintenance_date = st.date_input(
+                "Scheduled Maintenance Date",
+                value=None if cleared else datetime(2026,6,15).date(),
+                key="emergency_date",
+            )
 
             c1,c2 = st.columns(2)
             with c1:
@@ -1902,7 +1985,7 @@ if not st.session_state.preview_only:
 
             st.text_input(
                 "Duration",
-                value=calculate_duration_with_dates(maintenance_date, start_time, end_date, end_time),
+                value=calculate_duration(start_time, end_time),
                 disabled=True,
             )
 
@@ -1944,7 +2027,6 @@ if not st.session_state.preview_only:
                 objective,
                 maintenance_date,
                 start_time,
-                end_date,
                 end_time,
                 timezone_label,
                 downtime,
@@ -2012,21 +2094,12 @@ if not st.session_state.preview_only:
             )
 
             if incident_resolved:
-                c1,c2 = st.columns(2)
-                with c1:
-                    incident_resolved_date = st.date_input(
-                        "Resolved Date",
-                        value=None,
-                        key="incident_resolved_date",
-                    )
-                with c2:
-                    incident_resolved_time = st.time_input(
-                        "Resolved Time (SL Time)",
-                        value=None,
-                        key="incident_resolved_time",
-                    )
+                incident_resolved_time = st.time_input(
+                    "Resolved Time (SL Time)",
+                    value=None,
+                    key="incident_resolved_time",
+                )
             else:
-                incident_resolved_date = None
                 incident_resolved_time = None
 
             impact = st.text_area(
@@ -2070,7 +2143,6 @@ if not st.session_state.preview_only:
                 incident_date=incident_date,
                 incident_time=incident_time,
                 incident_resolved=incident_resolved,
-                incident_resolved_date=incident_resolved_date,
                 incident_resolved_time=incident_resolved_time,
                 impact=impact,
                 background=background,
@@ -2084,6 +2156,212 @@ if not st.session_state.preview_only:
 
             filename = "Incident_Advisory.html"
             preview_height = 620
+
+        # =====================================================
+        # GLOBAL INCIDENT BROADCAST NOTIFICATION
+        # =====================================================
+        elif template == "Global Incident Broadcast Notification":
+            with st.expander("⚙ Optional Fields", expanded=False):
+                st.caption("Uncheck a row if the information is not available yet.")
+                show_workaround = st.checkbox(
+                    "Workaround",
+                    value=True,
+                    key="global_incident_show_workaround",
+                )
+                show_update = st.checkbox(
+                    "Update",
+                    value=True,
+                    key="global_incident_show_update",
+                )
+                show_root_cause = st.checkbox(
+                    "Root Cause",
+                    value=True,
+                    key="global_incident_show_root_cause",
+                )
+
+            ticket = st.text_input(
+                "Ticket No.",
+                "",
+                key="global_incident_ticket",
+            )
+
+            summary = st.text_area(
+                "Summary",
+                "",
+                height=72,
+                key="global_incident_summary",
+            )
+
+            c1, c2 = st.columns(2)
+
+            with c1:
+                incident_date = st.date_input(
+                    "Date of Incident",
+                    value=None,
+                    key="global_incident_date",
+                )
+
+            with c2:
+                incident_time = st.time_input(
+                    "Incident Start Time (SL Time)",
+                    value=None,
+                    key="global_incident_time",
+                )
+
+            incident_resolved = st.checkbox(
+                "✅ Incident Resolved",
+                value=False,
+                key="global_incident_resolved",
+            )
+
+            if incident_resolved:
+                incident_resolved_time = st.time_input(
+                    "Resolved Time (SL Time)",
+                    value=None,
+                    key="global_incident_resolved_time",
+                )
+            else:
+                incident_resolved_time = None
+
+            impact = st.text_area(
+                "Service / Module Impact",
+                "",
+                height=75,
+                key="global_incident_impact",
+            )
+
+            background = st.text_area(
+                "Incident Background",
+                "",
+                height=95,
+                key="global_incident_background",
+            )
+
+            workaround = st.text_area(
+                "Workaround",
+                "",
+                height=75,
+                key="global_incident_workaround",
+            )
+
+            update = st.text_area(
+                "Update",
+                "",
+                height=90,
+                key="global_incident_update",
+            )
+
+            root_cause = st.text_area(
+                "Root Cause",
+                "",
+                height=75,
+                key="global_incident_root_cause",
+            )
+
+            html_output = global_incident_html(
+                ticket=ticket,
+                summary=summary,
+                incident_date=incident_date,
+                incident_time=incident_time,
+                incident_resolved=incident_resolved,
+                incident_resolved_time=incident_resolved_time,
+                impact=impact,
+                background=background,
+                workaround=workaround,
+                update=update,
+                root_cause=root_cause,
+                show_workaround=show_workaround,
+                show_update=show_update,
+                show_root_cause=show_root_cause,
+            )
+
+            filename = "Global_Incident_Broadcast_Notification.html"
+            preview_height = 650
+
+        # =====================================================
+        # WINDOWS APP TRANSITION ADVISORY
+        # =====================================================
+        elif template == "Windows App Transition Advisory":
+            st.caption("Create a letter-style GICT announcement and upload the old and new application icons.")
+
+            greeting = st.text_input(
+                "Greeting", "" if cleared else "Dear All,",
+                placeholder="Dear All,", key="windows_app_greeting",
+            )
+            intro = st.text_area(
+                "Opening Announcement", "",
+                placeholder="Please be informed that Microsoft will end support for the Remote Desktop app for Windows starting March 27, 2026...",
+                height=80, key="windows_app_intro",
+            )
+            notice = st.text_area(
+                "Availability Notice", "",
+                placeholder="...it will no longer be available or supported starting May 27, 2026.",
+                height=70, key="windows_app_notice",
+            )
+            purpose = st.text_area(
+                "Transition Requirement", "",
+                placeholder="To ensure uninterrupted access to Azure Virtual Desktop (AVD), users are required to transition to the Windows App...",
+                height=85, key="windows_app_purpose",
+            )
+            action_intro = st.text_input(
+                "Action Section Heading", "",
+                placeholder="What users need to do:", key="windows_app_action_intro",
+            )
+            action_1 = st.text_input(
+                "Action Item 1", "",
+                placeholder="Start using the Windows App when connecting to your VDI.", key="windows_app_action_1",
+            )
+            action_2 = st.text_input(
+                "Action Item 2", "",
+                placeholder="The Windows App is already available on your desktop.", key="windows_app_action_2",
+            )
+            rollout = st.text_area(
+                "Rollout Statement", "",
+                placeholder="GICT has already rolled out the new Windows App for VDI access.",
+                height=65, key="windows_app_rollout",
+            )
+            availability = st.text_area(
+                "User Request", "",
+                placeholder="You may find the application on your desktop. We kindly request all users to start using the Windows App when connecting to your VDI.",
+                height=85, key="windows_app_availability",
+            )
+
+            c1, c2 = st.columns(2)
+            with c1:
+                old_label = st.text_input("Old Application Label", "Old Application:", key="windows_app_old_label")
+                old_image = st.file_uploader(
+                    "Old Application Image", type=["png", "jpg", "jpeg"], key="windows_app_old_image"
+                )
+            with c2:
+                new_label = st.text_input("New Application Label", "New Application:", key="windows_app_new_label")
+                new_image = st.file_uploader(
+                    "New Application Image", type=["png", "jpg", "jpeg"], key="windows_app_new_image"
+                )
+
+            support = st.text_area(
+                "Temporary Support Instruction", "",
+                placeholder="If you encounter any issues, you may temporarily continue using the Remote Desktop app and inform IT Helpdesk immediately.",
+                height=85, key="windows_app_support",
+            )
+            decommission = st.text_area(
+                "Decommissioning Notice", "",
+                placeholder="A separate announcement will be sent prior to the official decommissioning and uninstallation of the Remote Desktop app.",
+                height=85, key="windows_app_decommission",
+            )
+            closing = st.text_input(
+                "Closing", "", placeholder="Thank you for your cooperation.", key="windows_app_closing"
+            )
+            regards = st.text_input("Sign-off", "Regards,", key="windows_app_regards")
+            team_1 = st.text_input("Team / Department 1", "Global Helpdesk Operations", key="windows_app_team_1")
+            team_2 = st.text_input("Team / Department 2", "IT Operations", key="windows_app_team_2")
+
+            html_output = windows_app_transition_html(
+                greeting, intro, notice, purpose, action_intro, action_1, action_2,
+                rollout, availability, old_label, new_label, old_image, new_image,
+                support, decommission, closing, regards, team_1, team_2,
+            )
+            filename = "Windows_App_Transition_Advisory.html"
+            preview_height = 740
 
         # =====================================================
         # DD APPROVAL
@@ -2214,6 +2492,8 @@ if not st.session_state.preview_only:
                 "Global Maintenance Advisory",
                 "Emergency Maintenance Advisory",
                 "Incident Advisory",
+                "Global Incident Broadcast Notification",
+                "Windows App Transition Advisory",
                 "DD Approval Template",
             ],
             key="repository_filter",
@@ -2277,7 +2557,7 @@ if not st.session_state.preview_only:
         st.divider()
         st.caption(
             f"Database: {DB_PATH.name}\\n\\n"
-            "Repository screenshots uploaded to DD Approval are not stored; "
+            "Uploaded screenshots/icons are not stored in the repository; "
             "text fields and template settings are saved."
         )
 
