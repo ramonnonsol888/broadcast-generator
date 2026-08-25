@@ -1,4 +1,4 @@
-# IT Broadcast Notification Generator
+# Broadcast Notification System
 
 Deployment-ready Streamlit app.
 
